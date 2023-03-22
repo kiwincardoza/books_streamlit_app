@@ -22,6 +22,9 @@ cursor = conn.execute("SELECT * FROM BOOKS")
 for row in cursor:
         print(row)
 """
+conn = sqlite3.connect('books_db.db')
+cursor = conn.execute("DROP TABLE BOOKS")
 
-
+for res in cursor:
+    print(res)
 conn.close()
