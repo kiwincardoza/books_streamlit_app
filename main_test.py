@@ -41,6 +41,12 @@ for book_obj in data_dict['GoodreadsResponse']['search']['results']['work']:
         print(book_obj['best_book'])
 '''
 
-response_obj = requests.get("https://www.goodreads.com/book/show", params={'key': CONSUMER_KEY, 'id': '12583831', 'format': 'xml'})
+
+#12583831, 848455, 33808483
+response_obj = requests.get("https://www.goodreads.com/book/show", params={'key': CONSUMER_KEY, 'id': '33808483', 'format': 'xml'})
 data_dict = xmltodict.parse(response_obj.text)
+print(data_dict['GoodreadsResponse']['book']['publication_year'])
 print(data_dict['GoodreadsResponse']['book']['series_works'])
+print(data_dict['GoodreadsResponse']['book']['num_pages'])
+print(data_dict['GoodreadsResponse']['book']['average_rating'])
+print(data_dict['GoodreadsResponse']['book']['image_url'])
