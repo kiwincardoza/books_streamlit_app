@@ -19,7 +19,10 @@ def search_book_in_goodreads(book_name, author_name, book_id):
         data_dict1 = xmltodict.parse(response_obj1.text)
         if data_dict1:
             st.success("Found the book from Goodreads Book ID")
-            return data_dict1['GoodreadsResponse']['book']['title'], book_id, int(data_dict1['GoodreadsResponse']['book']['num_pages']), int(data_dict1['GoodreadsResponse']['book']['publication_year']), float(data_dict1['GoodreadsResponse']['book']['average_rating']), data_dict1['GoodreadsResponse']['book']['image_url'], data_dict1['GoodreadsResponse']['book']['series_works']['series_work']['series']['title'], int(data_dict1['GoodreadsResponse']['book']['series_works']['series_work']['series']['primary_work_count'])
+            if data_dict1['GoodreadsResponse']['book']['series_works']:
+                return data_dict1['GoodreadsResponse']['book']['title'], book_id, int(data_dict1['GoodreadsResponse']['book']['num_pages']), int(data_dict1['GoodreadsResponse']['book']['publication_year']), float(data_dict1['GoodreadsResponse']['book']['average_rating']), data_dict1['GoodreadsResponse']['book']['image_url'], data_dict1['GoodreadsResponse']['book']['series_works']['series_work']['series']['title'], int(data_dict1['GoodreadsResponse']['book']['series_works']['series_work']['series']['primary_work_count'])
+            else:
+                return data_dict1['GoodreadsResponse']['book']['title'], book_id, int(data_dict1['GoodreadsResponse']['book']['num_pages']), int(data_dict1['GoodreadsResponse']['book']['publication_year']), float(data_dict1['GoodreadsResponse']['book']['average_rating']), data_dict1['GoodreadsResponse']['book']['image_url'], "NULL", 0
         else:
             st.warning("Did not find by Goodreads ID... Try by Name and Author")
 
@@ -143,6 +146,9 @@ if nav_option == 'View Books':
     series_name_lst = list(my_books_df['SERIES_NAME'].unique())
     author_name_lst = list(my_books_df['AUTHOR_NAME'].unique())
 
+    series_name_lst.append("All")
+    author_name_lst.append("All")
+
     read_book_lst = get_read_books_list()
 
     read_flag = st.selectbox('Select Read/Unread/ALL', ['All', 'Read', 'Unread'], index=2)
@@ -155,9 +161,9 @@ if nav_option == 'View Books':
                 options=[1,2,3,4,5],
                 value=(3,5))
     author_name = st.selectbox("Author Name", author_name_lst, index=0)
-    format = st.selectbox("Format", ["Paperback", "Hardcover", "Kindle"], index=0)
+    format_1 = st.selectbox("Format", ["All", "Paperback", "Hardcover", "Kindle"], index=0)
     series_name = st.selectbox("Series Name", series_name_lst, index=0)
-    new_flag = st.selectbox("New/Preloved", ["New", "Preloved"], index=0)
+    new_flag = st.selectbox("New/Preloved", ["All", "New", "Preloved"], index=0)
     fiction_flag = st.selectbox("Fiction/Non Fiction", ["Fiction", "Non Fiction"], index=0)
 
     if read_flag == 'Read':
@@ -165,12 +171,23 @@ if nav_option == 'View Books':
     elif read_flag == 'Unread':
         my_books_df = my_books_df[~my_books_df['NAME'].isin(read_book_lst)]
     
-    my_books_filtered_df = my_books_df[(my_books_df['PAGES']>=start_page) & (my_books_df['PAGES']<=end_page) |
-                                       (my_books_df['AVERAGE_RATING']>=start_rating) & (my_books_df['AVERAGE_RATING']<=end_rating) |
-                                       (my_books_df['AUTHOR_NAME'] == author_name) |
-                                       (my_books_df['FORMAT'] == format) |
-                                       (my_books_df['SERIES_NAME'] == series_name) |
-                                       (my_books_df['NEW_FLAG'] == new_flag) |
+    if author_name == "All":
+        authors_condition = (my_books_df['AUTHOR_NAME'] != "None")
+    else:
+        authors_condition = (my_books_df['AUTHOR_NAME'] == author_name)
+
+    if series_name == "All":
+        series_name_condition = (my_books_df['SERIES_NAME'] != "None")
+    else:
+        series_name_condition = (my_books_df['SERIES_NAME'] == series_name)
+    
+
+    my_books_filtered_df = my_books_df[(my_books_df['PAGES']>=start_page) & (my_books_df['PAGES']<=end_page) &
+                                       (my_books_df['AVERAGE_RATING']>=start_rating) & (my_books_df['AVERAGE_RATING']<=end_rating) &
+                                       (authors_condition) &
+                                       (my_books_df['FORMAT'] == format_1) &
+                                       (series_name_condition) &
+                                       (my_books_df['NEW_FLAG'] == new_flag) &
                                        (my_books_df['FICTION_FLAG'] == fiction_flag)
                                        ]
 

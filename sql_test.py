@@ -1,4 +1,5 @@
 import sqlite3
+import pandas as pd
 
 """
 conn = sqlite3.connect('books_test_db.db')
@@ -23,8 +24,14 @@ for row in cursor:
         print(row)
 """
 conn = sqlite3.connect('books_db.db')
+'''
 cursor = conn.execute("DROP TABLE BOOKS")
 
 for res in cursor:
     print(res)
+
+'''
+
+df = pd.read_sql("SELECT * FROM BOOKS", conn)
+print(df)
 conn.close()
