@@ -4,11 +4,23 @@ import xmltodict
 import sqlite3
 import pandas as pd
 from PIL import Image
+import math
 
 
 
 CONSUMER_KEY = 'MAqh1xHyjdG3G1wea58H5Q'
 CONSUMER_SECRET = 'QQ02V9neX62kgybmbkJpXlO3GcmF3EKW1YU7qKL5A'
+
+
+
+'''
+Updates:
+    Author name populated on own - selected button
+    Downloadable excel/csv/pdf - final table
+    Watermark/Logo - 
+    Error handling
+'''
+
 
 @st.cache_data
 def search_book_in_goodreads(book_name, author_name, book_id):
@@ -205,6 +217,18 @@ if nav_option == 'View Books':
     st.table(my_books_filtered_df)
 
     
+    books_in_one_segment = 3
+    no_of_books = len(my_books_filtered_df)
+    no_of_segments = math.ceil(no_of_books/books_in_one_segment)
+
+    image_container_lst = []
+    for segment in range(no_of_segments):
+        image_container_lst.append(st.columns(books_in_one_segment))
+
+    
     for index, row in my_books_filtered_df.iterrows():
-        image = Image.open(row['IMAGE_URL'])
-        st.image(image, caption=row['NAME'])
+        #image = Image.open(row['IMAGE_URL'])
+        #real_index = index + 1
+
+        st.image(row['IMAGE_URL'], caption=row['NAME'])
+    
