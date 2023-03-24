@@ -33,5 +33,6 @@ for res in cursor:
 '''
 
 df = pd.read_sql("SELECT * FROM BOOKS", conn)
-print(df)
+for ind, row in df.iterrows():
+    print (row['NAME'])
 conn.close()

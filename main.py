@@ -3,6 +3,7 @@ import requests
 import xmltodict
 import sqlite3
 import pandas as pd
+from PIL import Image
 
 
 
@@ -180,16 +181,30 @@ if nav_option == 'View Books':
         series_name_condition = (my_books_df['SERIES_NAME'] != "None")
     else:
         series_name_condition = (my_books_df['SERIES_NAME'] == series_name)
+
+    if format_1 == "All":
+        format_condition = (my_books_df['FORMAT'] != "None")
+    else:
+        format_condition = (my_books_df['FORMAT'] == format_1)
+
+    if new_flag == "All":
+        new_flag_condition = (my_books_df['NEW_FLAG'] != "None")
+    else:
+        new_flag_condition = (my_books_df['NEW_FLAG'] == new_flag)
     
 
     my_books_filtered_df = my_books_df[(my_books_df['PAGES']>=start_page) & (my_books_df['PAGES']<=end_page) &
                                        (my_books_df['AVERAGE_RATING']>=start_rating) & (my_books_df['AVERAGE_RATING']<=end_rating) &
                                        (authors_condition) &
-                                       (my_books_df['FORMAT'] == format_1) &
+                                       (format_condition) &
                                        (series_name_condition) &
-                                       (my_books_df['NEW_FLAG'] == new_flag) &
+                                       (new_flag_condition) &
                                        (my_books_df['FICTION_FLAG'] == fiction_flag)
                                        ]
 
-    st.write(read_book_lst)
-    st.write(my_books_filtered_df)
+    st.table(my_books_filtered_df)
+
+    
+    for index, row in my_books_filtered_df.iterrows():
+        image = Image.open(row['IMAGE_URL'])
+        st.image(image, caption=row['NAME'])
