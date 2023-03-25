@@ -27,15 +27,15 @@ def search_book_in_goodreads(book_name, author_name, book_id):
     try:
         if (book_name == '') & (author_name == '') & (book_id == ''):
             st.error("Enter some values to search")
-            return "NULL", "NULL", 0, 0, 0, "NULL", "NULL", 0
+            return "NULL", "NULL", "NULL", 0, 0, 0, "NULL", "NULL", 0
         response_obj1 = requests.get("https://www.goodreads.com/book/show", params={'key': CONSUMER_KEY, 'id': book_id, 'format': 'xml'})
         data_dict1 = xmltodict.parse(response_obj1.text)
         if data_dict1:
             st.success("Found the book from Goodreads Book ID")
             if data_dict1['GoodreadsResponse']['book']['series_works']:
-                return data_dict1['GoodreadsResponse']['book']['title'], book_id, int(data_dict1['GoodreadsResponse']['book']['num_pages']), int(data_dict1['GoodreadsResponse']['book']['publication_year']), float(data_dict1['GoodreadsResponse']['book']['average_rating']), data_dict1['GoodreadsResponse']['book']['image_url'], data_dict1['GoodreadsResponse']['book']['series_works']['series_work']['series']['title'], int(data_dict1['GoodreadsResponse']['book']['series_works']['series_work']['series']['primary_work_count'])
+                return data_dict1['GoodreadsResponse']['book']['title'], data_dict1['GoodreadsResponse']['book']['authors']['author']['name'], book_id, int(data_dict1['GoodreadsResponse']['book']['num_pages']), int(data_dict1['GoodreadsResponse']['book']['publication_year']), float(data_dict1['GoodreadsResponse']['book']['average_rating']), data_dict1['GoodreadsResponse']['book']['image_url'], data_dict1['GoodreadsResponse']['book']['series_works']['series_work']['series']['title'], int(data_dict1['GoodreadsResponse']['book']['series_works']['series_work']['series']['primary_work_count'])
             else:
-                return data_dict1['GoodreadsResponse']['book']['title'], book_id, int(data_dict1['GoodreadsResponse']['book']['num_pages']), int(data_dict1['GoodreadsResponse']['book']['publication_year']), float(data_dict1['GoodreadsResponse']['book']['average_rating']), data_dict1['GoodreadsResponse']['book']['image_url'], "NULL", 0
+                return data_dict1['GoodreadsResponse']['book']['title'], data_dict1['GoodreadsResponse']['book']['authors']['author']['name'], book_id, int(data_dict1['GoodreadsResponse']['book']['num_pages']), int(data_dict1['GoodreadsResponse']['book']['publication_year']), float(data_dict1['GoodreadsResponse']['book']['average_rating']), data_dict1['GoodreadsResponse']['book']['image_url'], "NULL", 0
         else:
             st.warning("Did not find by Goodreads ID... Try by Name and Author")
 
@@ -45,13 +45,13 @@ def search_book_in_goodreads(book_name, author_name, book_id):
         for book_obj in data_dict['GoodreadsResponse']['search']['results']['work']: 
             if book_obj['best_book']['author']['name'] == author_name:
                 st.success("Found the book by book name and author name")
-                return book_obj['best_book']['title'], book_obj['best_book']['id']['#text'], 0, 0, 0, book_obj['best_book']['image_url'], "NULL", 0
+                return book_obj['best_book']['title'], book_obj['best_book']['author']['name'], book_obj['best_book']['id']['#text'], 0, 0, 0, book_obj['best_book']['image_url'], "NULL", 0
     except Exception as e:
         st.error(f"Cannot find the book name - {e}!")
-        return "NULL", "NULL", 0, 0, 0, "NULL", "NULL", 0 
+        return "NULL", "NULL", "NULL", 0, 0, 0, "NULL", "NULL", 0
     
     st.error("Cannot find the author name!")
-    return "NULL", "NULL", 0, 0, 0, "NULL", "NULL", 0
+    return "NULL", "NULL", "NULL", 0, 0, 0, "NULL", "NULL", 0
 
 
 def insert_into_db(book_title_name, book_id_1, author_name, format_type, pages, new_flag, series_name, location,
@@ -112,15 +112,15 @@ if nav_option == 'Add Books':
     book_title_name = "NULL"
     bl, submit, bl = st.columns(3)
     if submit.button("Search"):
-        book_title_name, book_id_1, num_pages, publication_year, average_rating, image_url, series_name_1, total_in_series = search_book_in_goodreads(book_name, author_name, book_id)
+        book_title_name, author_name_2, book_id_1, num_pages, publication_year, average_rating, image_url, series_name_1, total_in_series = search_book_in_goodreads(book_name, author_name, book_id)
 
-    book_title_name, book_id_1, num_pages, publication_year, average_rating, image_url, series_name_1, total_in_series = search_book_in_goodreads(book_name, author_name, book_id)
+    book_title_name, author_name_2, book_id_1, num_pages, publication_year, average_rating, image_url, series_name_1, total_in_series = search_book_in_goodreads(book_name, author_name, book_id)
     book_title_name = book_title_name.replace("'", "''")
 
     with st.form("my_form"):
         book_name_id, author_name_id, book_id_id = st.columns(3)
         book_name_1 = book_name_id.text_input("Book Name", value=book_title_name)
-        author_name_1 = author_name_id.text_input("Author Name", value=author_name)
+        author_name_1 = author_name_id.text_input("Author Name", value=author_name_2)
         book_id_id.text_input("Goodreads Book ID", value=book_id_1)
         
         
@@ -147,7 +147,7 @@ if nav_option == 'Add Books':
         add_submitted = add_id.form_submit_button("ADD")
 
     if add_submitted:
-        insert_into_db(book_name_1, book_id_1, author_name_1, format_type, pages, new_flag, series_name, location, fiction_flag, purchase_date,
+        insert_into_db(book_name_1, book_id_1, author_name_2, format_type, pages, new_flag, series_name, location, fiction_flag, purchase_date,
                        image_url, publication_year, average_rating, total_in_series)
         st.success(f"BOOK {book_name_1} ADDED SUCCESSFULLY !")
 
@@ -159,8 +159,8 @@ if nav_option == 'View Books':
     series_name_lst = list(my_books_df['SERIES_NAME'].unique())
     author_name_lst = list(my_books_df['AUTHOR_NAME'].unique())
 
-    series_name_lst.append("All")
-    author_name_lst.append("All")
+    series_name_lst.insert(0, "All")
+    author_name_lst.insert(0, "All")
 
     read_book_lst = get_read_books_list()
 
@@ -183,6 +183,8 @@ if nav_option == 'View Books':
         my_books_df = my_books_df[my_books_df['NAME'].isin(read_book_lst)]
     elif read_flag == 'Unread':
         my_books_df = my_books_df[~my_books_df['NAME'].isin(read_book_lst)]
+    
+
     
     if author_name == "All":
         authors_condition = (my_books_df['AUTHOR_NAME'] != "None")
@@ -225,10 +227,21 @@ if nav_option == 'View Books':
     for segment in range(no_of_segments):
         image_container_lst.append(st.columns(books_in_one_segment))
 
+    #st.write(no_of_books)
     
-    for index, row in my_books_filtered_df.iterrows():
+    for index in range(no_of_books):
         #image = Image.open(row['IMAGE_URL'])
-        #real_index = index + 1
+        
+        if index%books_in_one_segment == 0:
+            img1, img2, img3 = st.columns(3)
+            img1.image(my_books_filtered_df.iloc[index]['IMAGE_URL'], caption=my_books_filtered_df.iloc[index]['NAME'], use_column_width='always')
+            if index+1+1 <= no_of_books:
+                #st.write(index+1+1, no_of_books)
+                img2.image(my_books_filtered_df.iloc[index+1]['IMAGE_URL'], caption=my_books_filtered_df.iloc[index+1]['NAME'], use_column_width='always')
+            if index+2+1 <= no_of_books:
+                img3.image(my_books_filtered_df.iloc[index+2]['IMAGE_URL'], caption=my_books_filtered_df.iloc[index+2]['NAME'], use_column_width='always')
 
-        st.image(row['IMAGE_URL'], caption=row['NAME'])
+
+
+        
     

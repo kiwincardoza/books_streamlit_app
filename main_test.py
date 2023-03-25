@@ -30,7 +30,7 @@ print(book_obj_lst)
 
 #12849385
 
-
+'''
 search_author = "David Baldacci"
 search_book = "The Innocent"
 response_obj = requests.get("https://www.goodreads.com/search/index.xml", params={'key':CONSUMER_KEY, 'page': '1', 'q': search_book, 'search': 'title'})
@@ -43,11 +43,12 @@ for book_obj in data_dict['GoodreadsResponse']['search']['results']['work']:
 
 '''
 #12583831, 848455, 33808483
-response_obj = requests.get("https://www.goodreads.com/book/show", params={'key': CONSUMER_KEY, 'id': '3380849999983', 'format': 'xml'})
+response_obj = requests.get("https://www.goodreads.com/book/show", params={'key': CONSUMER_KEY, 'id': '56816157', 'format': 'xml'})
 data_dict = xmltodict.parse(response_obj.text)
 print(data_dict['GoodreadsResponse']['book']['publication_year'])
 print(data_dict['GoodreadsResponse']['book']['series_works'])
 print(data_dict['GoodreadsResponse']['book']['num_pages'])
 print(data_dict['GoodreadsResponse']['book']['average_rating'])
 print(data_dict['GoodreadsResponse']['book']['image_url'])
-'''
+
+print(data_dict['GoodreadsResponse']['book']['authors']['author']['name'])
